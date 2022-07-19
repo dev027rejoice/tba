@@ -23,11 +23,11 @@ jobs:
           fingerprints:
             - "e2:fb:99:d7:c4:3a:f5:62:a1:0a:c8:f8:40:a0:1b:84"
       - run: flutter doctor
-      - run: cd tba && flutter packages get
-      - run: cd tba && flutter format 
-      - run: cd tba && flutter analyze
-      - run: cd tba && flutter test --coverage
-      - run: cd tba && flutter pub run coverde check 50
+      - run: flutter packages get
+      - run: flutter format 
+      - run: flutter analyze
+      - run: flutter test --coverage
+      - run: flutter pub run coverde check 50
 
   build_and_deploy_ios_internal_test:
     macos:
