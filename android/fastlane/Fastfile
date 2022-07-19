@@ -1,0 +1,86 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# doesn't work on CircleCI
+# update_fastlane
+
+#app_name = "QWIC - Electric Bikes" #{app_name}
+#project_path = "../" #{project_path}
+#aab_path = "../build/app/outputs/bundle/release/app-release.aab"
+
+platform :android do
+  
+  desc "Deploy a new version to Firebase App Distribution"
+  lane :internal_test do
+    flutter_build_apk()
+    firebase_app_distribution(
+      app: "1:232611952127:android:d56c6aeef240fe1f",
+      firebase_cli_token: ENV['FIREBASE_TOKEN'],
+      testers: "***@gmail.com, ***@gmail.com",
+      release_notes: "<Enter the release notes>",
+      firebase_cli_path: "/usr/local/bin/firebase",
+      apk_path: "../build/app/outputs/flutter-apk/app-release.apk"
+  )
+  end
+
+  desc "Deploy a new version to the Google Play Beta"
+  lane :beta do
+    deploy('beta')
+  end
+
+  desc "Deploy a new version to the Google Play Beta"
+  lane :production do
+    deploy('production')
+  end
+
+  desc "Deploy a new version to the Google Play Production"
+  def deploy(track)
+    flutter_build_apk()
+    upload_to_play_store(
+      track: track,
+      apk: "../build/app/outputs/flutter-apk/app-release.apk",
+      skip_upload_screenshots: true,
+      skip_upload_images: true)
+  end
+
+  def flutter_build_bundle
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: true)
+    sh("echo", "#{build_number}")
+    # Generate the changelog based on commit messages since your last tag
+    changelog_from_git_commits
+    # Build aab file: "flutter build appbundle"
+    Dir.chdir "../../" do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "appbundle", "--build-number=#{build_number}")
+    end
+
+  end
+
+  def flutter_build_apk
+    # Return the number of commits in current git branch
+    build_number = number_of_commits(all: true)
+    sh("echo", "#{build_number}")
+    # Generate the changelog based on commit messages since your last tag
+    changelog_from_git_commits
+    # Build apk file: "flutter build apk"
+    Dir.chdir "../../" do
+      sh("flutter", "packages", "get")
+      sh("flutter", "clean")
+      sh("flutter", "build", "apk","--release", "--build-number=#{build_number}")
+    end
+
+  end
+end
+

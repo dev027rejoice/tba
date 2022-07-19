@@ -1,0 +1,139 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+# https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+# https://docs.fastlane.tools/plugins/available-plugins
+#
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+app_identifier = ENV['APP_IDENTIFIER']
+app_name = ENV['APP_NAME']
+username = ENV['FASTLANE_USER']
+team_id = ENV['TEAM_ID']
+apple_id = ENV['APPLE_ID']
+
+keychain_path= "~/Library/Keychains/fastlane_tmp_keychain-db"
+keychain= 'fastlane_tmp_keychain'
+login_keychain = "login.keychain"
+project_path = ".." 
+archive_path = "build/qwic.xcarchive"
+
+platform :ios do
+  before_all do
+    setup_circle_ci
+  end
+
+  desc "Prepare the keychain, buildBuild, sign, archive and send push a new beta build to Firebase App Distribution"
+
+  lane :internal_test do
+    match(type: "adhoc")
+    gym(export_method: "adhoc")    
+    firebase_app_distribution(
+      app: "1:232611952127:ios:d56c6aeef240fe1f",
+      firebase_cli_token: ENV['FIREBASE_TOKEN'],
+      release_notes: "<Enter the release notes>",
+  )
+  end
+
+  desc "Prepare the keychain, buildBuild, sign, archive and send push a new beta build to TestFlight"
+  lane :beta do
+    prepare_codesign
+    build
+    sign_and_archive
+    publish_testflight
+  end
+
+  desc "Build, sign, archive and send push a new beta build to AppStore"
+  lane :release do
+    prepare_codesign
+    build
+    sign_and_archive
+    publish_appstore
+  end
+
+  desc "Build Flutter to update project files"
+  lane :build do
+  build_number = number_of_commits(all: true)
+    Dir.chdir "../../" do
+      # Clean flutter directory (Delete the build/ and .dart_tool/ directories.)
+      sh("flutter", "clean")
+      # Build flutter app for ios passing build-number without codesign
+      sh("flutter", "build", "ios", "--build-number=#{build_number}", "--no-codesign")
+    end
+  end
+
+  desc "Code Sign"
+  lane :prepare_codesign do
+    Dir.chdir "../" do
+      # Create temporary keychain
+      sh("security create-keychain -p '' '#{keychain}'")
+      # Import Apple Worldwide Developer Relations Certificate
+      sh("security import WWDR.cer -k '#{keychain}' -t cert -A -P ''")
+      # Import Distribution Certificate private key
+      sh("security import CM2ZXKG6T2.p12 -k '#{keychain}' -A -P '' -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild")
+      # Import Distribution Certificate
+      sh("security import CM2ZXKG6T2.cer -k '#{keychain}' -A -P '' -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild")
+      # Give permission to all Certificates that Match "Apple Distribution: Hartmobile BV (#{ENV['TEAM_ID']})" so permisision popup isn't displayed 
+      sh("security set-key-partition-list -S apple-tool:,apple: -s -k '' -D 'Apple Distribution: Hartmobile BV (#{ENV['TEAM_ID']})' -t private #{keychain}")
+      # List temporary keychain for user
+      sh("security list-keychains -d user -s '#{login_keychain}' '#{keychain}'")
+      # Unlock temporary keychain
+      sh("security unlock-keychain -p '' '#{keychain}'")
+      # Set temporary keychain to be the default
+      sh("security default-keychain -s '#{keychain}'")
+      # Set keychain settings (sleep, lock)
+      sh("security set-keychain-settings '#{keychain}'")
+      # Check if keychain, certificates, private key it's sucessfully configured
+      sh("security find-identity -v -p codesigning '#{keychain}'")
+    end
+  end
+
+  desc "Codesign, build and archive ipa"
+  lane :sign_and_archive do
+    # Check online at AppleDevelopment if the cert/key/provision profile it's corrected set. If not, fix the provison to match exportOptions.plist
+    cert(keychain_path: keychain_path)
+    # Codesign the App and frameworks. Check if exportOptions.plist it's correct and matching provision/cert/key
+    sigh(username: username, app_identifier: app_identifier, force: true)
+    Dir.chdir "../" do
+      # Building App
+      sh("xcodebuild -workspace Runner.xcworkspace -scheme Runner -destination 'generic/platform=iOS' -archivePath #{archive_path} clean archive CODE_SIGNING_ALLOWED='NO' -quiet")
+      # Exporting App (Compressing into .ipa)
+      sh("xcodebuild -exportArchive -archivePath #{archive_path} -exportOptionsPlist ExportOptions.plist -exportPath . -quiet")
+      # Delete temporary keychain
+      sh("security delete-keychain #{keychain}")
+     end
+  end
+
+   desc "Upload ipa to TestFlight"
+   lane :publish_testflight do
+     upload_to_testflight( 
+       skip_waiting_for_build_processing: true,
+       ipa: "Runner.ipa",
+       username: username,
+       team_id: team_id,
+       uses_non_exempt_encryption: true) 
+   end
+
+  desc "Upload ipa to AppStore"
+  lane :publish_appstore do
+    upload_to_app_store(
+      submit_for_review: true,
+      automatic_release: true,
+      skip_screenshots: true,
+      force: true,
+      skip_waiting_for_build_processing: true,
+      ipa: "Runner.ipa",
+      username: username)
+  end
+
+  desc "Initialize CocoaPods"
+  lane :prepare do
+    # Initialize CocoaPods inside Fastlane instance
+    sh("pod setup")
+  end
+
+end

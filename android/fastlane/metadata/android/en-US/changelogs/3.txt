@@ -1,0 +1,11 @@
+Thank you for using TBA! The new release contains anticipated features and improvements:
+
+● Awake screen mode (Screen doesn't turn off)
+● Sound on/off feature on The Ball screen
+● Sounds tuned to match the coherent monitor precisely
+● Updated visual design
+● Support Android 10
+● Adaptive icon
+● Multiple crashes, bug fixes, and performance optimizations
+
+While the app is updating, take a few gentle breaths: inhale, exhale...

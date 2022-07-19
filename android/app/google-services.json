@@ -1,0 +1,64 @@
+{
+  "project_info": {
+    "project_number": "232611952127",
+    "firebase_url": "https://the-breathing-app.firebaseio.com",
+    "project_id": "the-breathing-app",
+    "storage_bucket": "the-breathing-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232611952127:android:d56c6aeef240fe1f",
+        "android_client_info": {
+          "package_name": "org.ayny.breathingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "232611952127-gnmf9pf9t3ge93tu27mus1kddqc6d92e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.ayny.breathingapp",
+            "certificate_hash": "8f417b6ce6df42d8523213da3d9a2a9d12d8c92a"
+          }
+        },
+        {
+          "client_id": "232611952127-sgg2ft3032lvqid5bce4dnjq6tepdk8b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.ayny.breathingapp",
+            "certificate_hash": "733839214126d3e73096a7b8e43b91cb23bb33af"
+          }
+        },
+        {
+          "client_id": "232611952127-qtjl02r9j3pkqkr962vtmiq0v9e8nko8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOR2QkvA440D8oJXutyFM8znLcBtt11vY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "232611952127-qtjl02r9j3pkqkr962vtmiq0v9e8nko8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "232611952127-qnplcck0tviboun61bfv1srbm2v55tit.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.ayny.breathingapp",
+                "app_store_id": "1285982210"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
