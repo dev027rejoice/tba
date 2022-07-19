@@ -16,7 +16,7 @@ jobs:
   flutter_tests:
     description: "Run flutter code analyzer and unit tests"
     docker:
-      - image: cirrusci/flutter:2.8.1
+      - image: cirrusci/flutter:3.3.4
     steps:
       - checkout
       - add_ssh_keys:
